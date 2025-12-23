@@ -1,0 +1,2 @@
+module tb_byte_encode;
+endmodule

@@ -1,0 +1,2 @@
+module byte_encode;
+endmodule
