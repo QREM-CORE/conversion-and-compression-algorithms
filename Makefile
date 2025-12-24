@@ -44,16 +44,16 @@ compile: $(WORK)
 
 # Individual run targets invoke vsim in command-line mode.
 run_tb_bits2bytes: compile
-	$(VSIM) $(VSIMFLAGS) -do "run -all; quit -f" tb_bits2bytes
+	$(VSIM) $(VSIMFLAGS) tb_bits2bytes -do "run -all; quit -f"
 
 run_tb_bytes2bits: compile
-	$(VSIM) $(VSIMFLAGS) -do "run -all; quit -f" tb_bytes2bits
+	$(VSIM) $(VSIMFLAGS) tb_bytes2bits -do "run -all; quit -f"
 
 run_tb_byte_encode: compile
-	$(VSIM) $(VSIMFLAGS) -do "run -all; quit -f" tb_byte_encode
+	$(VSIM) $(VSIMFLAGS) tb_byte_encode -do "run -all; quit -f"
 
 run_tb_byte_decode: compile
-	$(VSIM) $(VSIMFLAGS) -do "run -all; quit -f" tb_byte_decode
+	$(VSIM) $(VSIMFLAGS) tb_byte_decode -do "run -all; quit -f"
 
 clean:
 	rm -rf $(WORK) transcript vsim.wlf modelsim.ini
