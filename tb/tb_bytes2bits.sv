@@ -23,6 +23,7 @@ module tb_bytes2bits;
 				exp[i*8 +: 8] = bytes[i];
 			end
 			#1;
+			$display("[bytes2bits %s] bytes_i=%p bits_o=%h exp=%h", name, bytes_i, bits_o, exp);
 			if (bits_o !== exp) begin
 				$fatal(1, "bytes2bits %s failed: expected %0h got %0h", name, exp, bits_o);
 			end else begin

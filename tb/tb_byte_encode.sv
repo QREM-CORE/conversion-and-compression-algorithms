@@ -113,6 +113,10 @@ module tb_byte_encode;
 
 			#1;
 
+			$display("[byte_encode d=1] f[0..3]=%p b[0..7]=%p exp[0..7]=%p", f1[0 +: 4], b1[0 +: 8], exp_b1[0 +: 8]);
+			$display("[byte_encode d=8] f[0..3]=%p b[0..7]=%p exp[0..7]=%p", f2[0 +: 4], b2[0 +: 8], exp_b2[0 +: 8]);
+			$display("[byte_encode d=12] f[0..3]=%p b[0..7]=%p exp[0..7]=%p", f3[0 +: 4], b3[0 +: 8], exp_b3[0 +: 8]);
+
 			if (b1 !== exp_b1) $fatal(1, "encode d=1 mismatch");
 			if (b2 !== exp_b2) $fatal(1, "encode d=8 mismatch");
 			if (b3 !== exp_b3) $fatal(1, "encode d=12 mismatch");

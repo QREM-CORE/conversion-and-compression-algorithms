@@ -43,6 +43,9 @@ module tb_byte_decode;
 		int i;
 		begin
 			#1;
+			$display("[byte_decode d=1] b[0..7]=%p f_in[0..3]=%p f_out[0..3]=%p", b1[0 +: 8], f1[0 +: 4], f1_o[0 +: 4]);
+			$display("[byte_decode d=8] b[0..7]=%p f_in[0..3]=%p f_out[0..3]=%p", b2[0 +: 8], f2[0 +: 4], f2_o[0 +: 4]);
+			$display("[byte_decode d=12] b[0..7]=%p f_in[0..3]=%p f_out[0..3]=%p", b3[0 +: 8], f3[0 +: 4], f3_o[0 +: 4]);
 			for (i = 0; i < 256; i++) begin
 				if (f1_o[i] !== f1[i][D1-1:0]) $fatal(1, "decode d=1 mismatch at %0d", i);
 				if (f2_o[i] !== f2[i][D2-1:0]) $fatal(1, "decode d=8 mismatch at %0d", i);

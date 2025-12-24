@@ -23,6 +23,7 @@ module tb_bits2bytes;
 				exp[i] = bits[i*8 +: 8];
 			end
 			#1; // allow combinational settle
+			$display("[bits2bytes %s] bits_i=%h bytes_o=%p exp=%p", name, bits_i, bytes_o, exp);
 			if (bytes_o !== exp) begin
 				$fatal(1, "bits2bytes %s failed: expected %0h got %0h", name, exp, bytes_o);
 			end else begin
