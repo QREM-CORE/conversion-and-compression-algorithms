@@ -19,10 +19,11 @@ module tb_bits2bytes;
 
 	task automatic check_case(logic [N_BYTES*8-1:0] bits, string name);
 		logic [N_BYTES-1:0][7:0] exp;
+		int j;
 		begin
 			bits_i = bits;
-			for (i = 0; i < N_BYTES; i++) begin
-				exp[i] = bits[i*8 +: 8];
+			for (j = 0; j < N_BYTES; j++) begin
+				exp[j] = bits[j*8 +: 8];
 			end
 			#1; // allow combinational settle
 			$display("[bits2bytes][%s] bits=%h bytes=%p", name, bits_i, bytes_o);
