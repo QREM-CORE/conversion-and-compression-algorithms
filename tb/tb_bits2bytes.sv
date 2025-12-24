@@ -6,6 +6,10 @@ module tb_bits2bytes;
 	logic [N_BYTES-1:0][7:0] bytes_o;
 	logic [N_BYTES*8-1:0] inc;
 	int i;
+	int pass_cnt;
+	int test_cnt;
+	int unsigned seed = 32'hb17b_2b17;
+	int i;
 
 	bits2bytes #(
 		.N_BYTES(N_BYTES)
@@ -23,28 +27,38 @@ module tb_bits2bytes;
 				exp[i] = bits[i*8 +: 8];
 			end
 			#1; // allow combinational settle
-			$display("[bits2bytes %s] bits_i=%h bytes_o=%p exp=%p", name, bits_i, bytes_o, exp);
+			$display("[bits2bytes][%s] bits=%h bytes=%p", name, bits_i, bytes_o);
 			if (bytes_o !== exp) begin
 				$fatal(1, "bits2bytes %s failed: expected %0h got %0h", name, exp, bytes_o);
 			end else begin
-				$display("bits2bytes %s passed", name);
+				$display("[bits2bytes][%s] PASS", name);
+				pass_cnt++;
 			end
+			test_cnt++;
 		end
 	endtask
 
 	initial begin
-		// Pattern with mixed bits
+		pass_cnt = 0;
+		test_cnt = 0;
+
+		// Directed patterns
 		check_case(32'h89_AB_CD_EF, "pattern1");
-		// All zeros
 		check_case('0, "zeros");
-		// All ones
 		check_case({N_BYTES*8{1'b1}}, "ones");
-		// Incrementing bytes
 		for (i = 0; i < N_BYTES; i++) begin
 			inc[i*8 +: 8] = i;
 		end
 		check_case(inc, "incrementing");
-		$display("tb_bits2bytes done");
+
+		// Randomized patterns
+		for (i = 0; i < 5; i++) begin
+			bits_i = $urandom(seed);
+			seed   = seed + 32'h1021;
+			check_case(bits_i, {"rand", i[2:0]});
+		end
+
+		$display("[bits2bytes] Summary: %0d/%0d PASS", pass_cnt, test_cnt);
 		$finish;
 	end
 
