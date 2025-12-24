@@ -5,19 +5,26 @@
 
 SystemVerilog helpers for turning ML-KEM (Kyber-style) coefficient streams into bytes and back. The blocks are tiny, combinational, and parameterized so you can drop them into FPGA or ASIC flows without extra plumbing.
 
+## Highlights
+
+- ML-KEM (Kyber) oriented helpers: ByteEncode_d, ByteDecode_d, and generic bit/byte packers.
+- Purely combinational RTL: no clocks or resets; drop-in friendly.
+- Parameterized widths: tune `D`, `IN_WIDTH`, `OUT_WIDTH`, and `N_BYTES` to fit your datapath.
+- Endianness defined: bit 0 of a coefficient is bit 0 of byte 0 (little-endian within each byte).
+
 ## What each module does
 
-- [rtl/bits2bytes.sv](rtl/bits2bytes.sv): Takes a flat bit vector and groups it into bytes. Bit 0 of the input becomes bit 0 of byte 0 (little-endian per byte).
-- [rtl/bytes2bits.sv](rtl/bytes2bits.sv): The inverse of `bits2bytes`; spreads a byte array back into a flat bit vector.
-- [rtl/byte_encode.sv](rtl/byte_encode.sv): Implements Algorithm 5 (ByteEncode_d). Packs 256 integers, each `D` bits wide, into `32*D` bytes.
-- [rtl/byte_decode.sv](rtl/byte_decode.sv): Implements Algorithm 6 (ByteDecode_d). Unpacks `32*D` bytes back into 256 integers and applies the expected modulus.
-- [tb](tb): Empty stubs so you can wire up your own stimulus quickly.
+- [rtl/bits2bytes.sv](rtl/bits2bytes.sv): Flat bit vector → byte array (LSB-first inside each byte).
+- [rtl/bytes2bits.sv](rtl/bytes2bits.sv): Byte array → flat bit vector (inverse of `bits2bytes`).
+- [rtl/byte_encode.sv](rtl/byte_encode.sv): Algorithm 5 (ByteEncode_d). Packs 256 integers of width `D` into `32*D` bytes.
+- [rtl/byte_decode.sv](rtl/byte_decode.sv): Algorithm 6 (ByteDecode_d). Unpacks `32*D` bytes into 256 integers and applies the modulus.
+- [tb](tb): Ready-made self-checking benches for each module.
 
 ## Data ordering in plain words
 
-- Inside each byte, bit 0 is the least significant bit of the coefficient.
-- Coefficients are packed consecutively: coefficient 0 consumes bits 0..D-1, coefficient 1 consumes bits D..2D-1, and so on.
-- For `byte_decode` when `D=12`, values are reduced mod 3329 (Kyber q). For other `D`, modulus is `2^D`.
+- Bit 0 of a coefficient is the LSB and is emitted first.
+- Coefficients pack back-to-back: coeff 0 uses bits 0..D-1, coeff 1 uses bits D..2D-1, etc.
+- Decode modulus: if `D=12`, values reduce mod 3329 (Kyber q); otherwise modulus is `2^D`.
 
 ## Module details (parameters and ports)
 
@@ -32,12 +39,19 @@ SystemVerilog helpers for turning ML-KEM (Kyber-style) coefficient streams into 
 ### byte_encode
 - Parameters: `D` (1–12), `IN_WIDTH` (>= D, default 16).
 - Ports: `f_i` is 256 integers wide (`IN_WIDTH` each); `b_o` is `32*D` bytes.
-- Behavior: Copies each coefficient into a packed bitstream, little-endian within each coefficient, then calls `bits2bytes` to group into bytes.
+- Behavior: Packs each coefficient LSB-first into a bitstream, then groups into bytes via `bits2bytes`.
 
 ### byte_decode
 - Parameters: `D` (1–12), `OUT_WIDTH` (defaults to `D`, or 12 when `D=12`).
 - Ports: `b_i` is `32*D` bytes; `f_o` is 256 integers (`OUT_WIDTH` each).
-- Behavior: Uses `bytes2bits` to flatten, rebuilds each coefficient, then applies modulus (3329 when `D=12`, else `2^D`).
+- Behavior: Flattens bytes with `bytes2bits`, rebuilds coefficients LSB-first, then applies the modulus rule above.
+
+## Quick parameter reference
+
+- `D`: Coefficient bit-width (1–12). Use 12 for Kyber q=3329.
+- `IN_WIDTH`: Input coefficient width into `byte_encode`; must be >= `D` (16 is common).
+- `OUT_WIDTH`: Output width from `byte_decode`; defaults to `D` (12 when `D=12`).
+- `N_BYTES`: Number of bytes when using the generic packers (`bits2bytes`/`bytes2bits`).
 
 ## Quick-start example
 
@@ -68,16 +82,27 @@ byte_decode #(
 
 Because everything is combinational, a single-cycle smoke test (drive inputs, wait a delta cycle, check outputs) is usually enough.
 
-## Parameter tips
+## Integration tips
 
-- `D` must be 1–12; each module has a guard that errors out in simulation if violated.
-- Set `IN_WIDTH` to at least `D`; keeping a few spare bits (like 16) is common when upstream logic already uses wider buses.
-- Keep `OUT_WIDTH` aligned with the rest of your datapath; leave it at the default 12 for Kyber.
+- Guards: `D` must be 1–12; assertions fire in simulation if violated.
+- Widths: Set `IN_WIDTH` ≥ `D`; leave `OUT_WIDTH` at the default unless your downstream path is narrower/wider.
+- Timing: RTL is combinational; add registers around the boundary if you need to meet timing.
+- Endianness: Bit ordering is fixed LSB-first; no byte swapping needed.
 
-## Simulating
+## Testing
 
-- Drop your own stimulus into the testbench shells in [tb](tb). No clocks are required unless you add pipelining around these blocks.
-- For self-checking tests, instantiate `byte_encode` feeding `byte_decode` and confirm round-trip equality (allowing for the modulus behavior when `D=12`).
+- Included benches:
+	- [tb/tb_bits2bytes.sv](tb/tb_bits2bytes.sv): Directed + random checks for the packer.
+	- [tb/tb_bytes2bits.sv](tb/tb_bytes2bits.sv): Directed + random checks for the unpacker.
+	- [tb/tb_byte_encode.sv](tb/tb_byte_encode.sv): Tests `D` = 1, 8, 12 with directed/random stimuli and local golden models.
+	- [tb/tb_byte_decode.sv](tb/tb_byte_decode.sv): Encode→decode round-trip for `D` = 1, 8, 12; verifies modulo handling.
+
+- Run with ModelSim/Questa via the provided [Makefile](Makefile):
+	- `make` or `make run_all` — build `work` and run all benches.
+	- `make run_tb_bits2bytes` (or any listed target) — compile RTL + that bench and run it.
+	- `make clean` — remove `work` and temporary artifacts.
+
+Override tools with `VLOG=`, `VSIM=`, `VLIB=`, and change library name with `WORK=` if needed.
 
 ## Repository layout
 
