@@ -9,7 +9,6 @@ module tb_bits2bytes;
 	int pass_cnt;
 	int test_cnt;
 	int unsigned seed = 32'hb17b_2b17;
-	int i;
 
 	bits2bytes #(
 		.N_BYTES(N_BYTES)
@@ -20,7 +19,6 @@ module tb_bits2bytes;
 
 	task automatic check_case(logic [N_BYTES*8-1:0] bits, string name);
 		logic [N_BYTES-1:0][7:0] exp;
-		int i;
 		begin
 			bits_i = bits;
 			for (i = 0; i < N_BYTES; i++) begin
