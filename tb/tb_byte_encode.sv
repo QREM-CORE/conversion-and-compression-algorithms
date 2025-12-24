@@ -26,25 +26,68 @@ module tb_byte_encode;
 	byte_encode #(.D(D2), .IN_WIDTH(INW)) dut2 (.f_i(f2), .b_o(b2));
 	byte_encode #(.D(D3), .IN_WIDTH(INW)) dut3 (.f_i(f3), .b_o(b3));
 
-	// Helper to compute expected bytes for a given d and input array.
-	task automatic compute_expected(
-		input  int d,
+	// Helpers to compute expected bytes for fixed d values (avoids non-constant ranges).
+	task automatic compute_expected_d1(
 		input  logic [255:0][INW-1:0] f,
-		output logic [32*d-1:0][7:0] b
+		output logic [32*D1-1:0][7:0] b
 	);
 		int i, j;
-		logic [256*d-1:0] bits;
+		logic [256*D1-1:0] bits;
 		begin
 			bits = '0;
 			for (i = 0; i < 256; i++) begin
 				int unsigned a;
 				a = f[i];
-				for (j = 0; j < d; j++) begin
-					bits[i*d + j] = a[0];
+				for (j = 0; j < D1; j++) begin
+					bits[i*D1 + j] = a[0];
 					a = a >> 1;
 				end
 			end
-			for (i = 0; i < 32*d; i++) begin
+			for (i = 0; i < 32*D1; i++) begin
+				b[i] = bits[i*8 +: 8];
+			end
+		end
+	endtask
+
+	task automatic compute_expected_d2(
+		input  logic [255:0][INW-1:0] f,
+		output logic [32*D2-1:0][7:0] b
+	);
+		int i, j;
+		logic [256*D2-1:0] bits;
+		begin
+			bits = '0;
+			for (i = 0; i < 256; i++) begin
+				int unsigned a;
+				a = f[i];
+				for (j = 0; j < D2; j++) begin
+					bits[i*D2 + j] = a[0];
+					a = a >> 1;
+				end
+			end
+			for (i = 0; i < 32*D2; i++) begin
+				b[i] = bits[i*8 +: 8];
+			end
+		end
+	endtask
+
+	task automatic compute_expected_d3(
+		input  logic [255:0][INW-1:0] f,
+		output logic [32*D3-1:0][7:0] b
+	);
+		int i, j;
+		logic [256*D3-1:0] bits;
+		begin
+			bits = '0;
+			for (i = 0; i < 256; i++) begin
+				int unsigned a;
+				a = f[i];
+				for (j = 0; j < D3; j++) begin
+					bits[i*D3 + j] = a[0];
+					a = a >> 1;
+				end
+			end
+			for (i = 0; i < 32*D3; i++) begin
 				b[i] = bits[i*8 +: 8];
 			end
 		end
@@ -64,9 +107,9 @@ module tb_byte_encode;
 
 	task automatic run_and_check;
 		begin
-			compute_expected(D1, f1, exp_b1);
-			compute_expected(D2, f2, exp_b2);
-			compute_expected(D3, f3, exp_b3);
+			compute_expected_d1(f1, exp_b1);
+			compute_expected_d2(f2, exp_b2);
+			compute_expected_d3(f3, exp_b3);
 
 			#1;
 

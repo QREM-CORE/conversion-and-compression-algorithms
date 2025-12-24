@@ -6,7 +6,7 @@ VSIM      ?= vsim
 VLIB      ?= vlib
 VMAP      ?= vmap
 WORK      ?= work
-VLOGFLAGS ?= -sv -work $(WORK)
+VLOGFLAGS ?= -sv -svinputport=wire -work $(WORK)
 VSIMFLAGS ?= -c -quiet -voptargs=+acc
 
 RTL_SRCS := \
