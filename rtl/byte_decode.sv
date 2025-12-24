@@ -4,7 +4,7 @@ module byte_decode #(
 	parameter int D = 12,                       // 1 <= D <= 12
 	parameter int OUT_WIDTH = (D == 12) ? 12 : D // width of each output integer
 )(
-	input  logic [32*D-1:0][7:0] b_i,
+	input  wire  logic [32*D-1:0][7:0] b_i,
 	output logic [255:0][OUT_WIDTH-1:0] f_o
 );
 

@@ -2,7 +2,7 @@
 module bits2bytes #(
 	parameter int N_BYTES = 1  // number of output bytes; input width is 8*N_BYTES
 )(
-	input  logic [N_BYTES*8-1:0] bits_i,
+	input  wire  logic [N_BYTES*8-1:0] bits_i,
 	output logic [N_BYTES-1:0][7:0] bytes_o
 );
 
