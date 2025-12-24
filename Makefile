@@ -7,7 +7,7 @@ VLIB      ?= vlib
 VMAP      ?= vmap
 WORK      ?= work
 VLOGFLAGS ?= -sv -work $(WORK)
-VSIMFLAGS ?= -c -quiet -voptargs=+acc
+VSIMFLAGS ?= -c -voptargs=+acc
 
 RTL_SRCS := \
 	rtl/bits2bytes.sv \
