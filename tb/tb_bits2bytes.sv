@@ -5,6 +5,7 @@ module tb_bits2bytes;
 	logic [N_BYTES*8-1:0] bits_i;
 	logic [N_BYTES-1:0][7:0] bytes_o;
 	logic [N_BYTES*8-1:0] inc;
+	int i;
 
 	bits2bytes #(
 		.N_BYTES(N_BYTES)
@@ -38,7 +39,6 @@ module tb_bits2bytes;
 		// All ones
 		check_case({N_BYTES*8{1'b1}}, "ones");
 		// Incrementing bytes
-		int i;
 		for (i = 0; i < N_BYTES; i++) begin
 			inc[i*8 +: 8] = i;
 		end

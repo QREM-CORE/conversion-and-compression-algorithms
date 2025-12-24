@@ -5,6 +5,7 @@ module tb_bytes2bits;
 	logic [N_BYTES-1:0][7:0] bytes_i;
 	logic [N_BYTES*8-1:0] bits_o;
 	logic [N_BYTES-1:0][7:0] pat;
+	int i;
 
 	bytes2bits #(
 		.N_BYTES(N_BYTES)
@@ -47,7 +48,6 @@ module tb_bytes2bits;
 		check_case(pat, "ones");
 
 		// Incrementing bytes
-		int i;
 		for (i = 0; i < N_BYTES; i++) begin
 			pat[i] = i;
 		end
