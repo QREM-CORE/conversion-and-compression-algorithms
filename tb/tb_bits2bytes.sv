@@ -53,7 +53,7 @@ module tb_bits2bytes;
 		for (i = 0; i < 5; i++) begin
 			bits_i = $urandom(seed);
 			seed   = seed + 32'h1021;
-			check_case(bits_i, {"rand", i[2:0]});
+			check_case(bits_i, {"random", i[2:0]});
 		end
 
 		$display("[bits2bytes] Summary: %0d/%0d PASS", pass_cnt, test_cnt);
