@@ -1,59 +1,46 @@
-# Makefile for ModelSim/Questa: compile and run all SystemVerilog testbenches.
-# Override variables on the command line if your tool names differ.
+# ModelSim/Questa multi-testbench Makefile
 
-VLOG      ?= vlog
-VSIM      ?= vsim
-VLIB      ?= vlib
-VMAP      ?= vmap
-WORK      ?= work
-VLOGFLAGS ?= -sv -work $(WORK)
-VSIMFLAGS ?= -c -voptargs=+acc
+VLOG ?= vlog
+VSIM ?= vsim
+VLIB ?= vlib
+WORK ?= work
 
-RTL_SRCS := \
-	rtl/bits2bytes.sv \
-	rtl/bytes2bits.sv \
-	rtl/byte_encode.sv \
-	rtl/byte_decode.sv
-
-TB_SRCS := \
-	tb/tb_bits2bytes.sv \
-	tb/tb_bytes2bits.sv \
-	tb/tb_byte_encode.sv \
-	tb/tb_byte_decode.sv
-
-TB_TOPS := \
+# List of testbenches to run
+TESTBENCHES = \
 	tb_bits2bytes \
 	tb_bytes2bits \
 	tb_byte_encode \
 	tb_byte_decode
 
-.PHONY: all clean compile run $(TB_TOPS) $(addprefix run_,$(TB_TOPS))
+# RTL sources
+RTL_SRCS = \
+	rtl/bits2bytes.sv \
+	rtl/bytes2bits.sv \
+	rtl/byte_encode.sv \
+	rtl/byte_decode.sv
 
-all: run
+.PHONY: all clean run_all run_%
 
-run: $(addprefix run_,$(TB_TOPS))
+all: $(WORK) run_all
 
-# Create and map the work library if it does not exist.
+# Create work library
 $(WORK):
-	@$(VLIB) $(WORK)
-	@$(VMAP) $(WORK) $(WORK)
+	$(VLIB) $(WORK)
 
-# Compile all RTL and TB sources into the work library.
-compile: $(WORK)
-	$(VLOG) $(VLOGFLAGS) $(RTL_SRCS) $(TB_SRCS)
+# Run all testbenches
+run_all:
+	@for tb in $(TESTBENCHES); do \
+		$(MAKE) run_$$tb; \
+	done
 
-# Individual run targets invoke vsim in command-line mode.
-run_tb_bits2bytes: compile
-	$(VSIM) $(VSIMFLAGS) tb_bits2bytes -do "run -all; quit -f"
-
-run_tb_bytes2bits: compile
-	$(VSIM) $(VSIMFLAGS) tb_bytes2bits -do "run -all; quit -f"
-
-run_tb_byte_encode: compile
-	$(VSIM) $(VSIMFLAGS) tb_byte_encode -do "run -all; quit -f"
-
-run_tb_byte_decode: compile
-	$(VSIM) $(VSIMFLAGS) tb_byte_decode -do "run -all; quit -f"
+# Rule for each testbench
+run_%: $(WORK)
+	@echo "=== Running $* ==="
+	$(VLOG) -sv -work $(WORK) $(RTL_SRCS) tb/$*.sv
+	@echo 'run -all' > run_$*.do
+	@echo 'quit -f' >> run_$*.do
+	$(VSIM) -c -voptargs=+acc -do run_$*.do $(WORK).$*
+	rm -f run_$*.do
 
 clean:
-	rm -rf $(WORK) transcript vsim.wlf modelsim.ini
+	rm -rf $(WORK) transcript vsim.wlf modelsim.ini run_*.do
