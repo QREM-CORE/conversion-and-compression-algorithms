@@ -4,6 +4,7 @@ module tb_bytes2bits;
 
 	logic [N_BYTES-1:0][7:0] bytes_i;
 	logic [N_BYTES*8-1:0] bits_o;
+	logic [N_BYTES-1:0][7:0] pat;
 
 	bytes2bits #(
 		.N_BYTES(N_BYTES)
@@ -31,7 +32,6 @@ module tb_bytes2bits;
 
 	initial begin
 		// Pattern with specific bytes
-		logic [N_BYTES-1:0][7:0] pat;
 		pat[0] = 8'hEF;
 		pat[1] = 8'hCD;
 		pat[2] = 8'hAB;

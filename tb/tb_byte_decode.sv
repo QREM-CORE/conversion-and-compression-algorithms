@@ -6,10 +6,10 @@ module tb_byte_decode;
 	localparam int D3 = 12;
 	localparam int INW = 16;
 
-	// Stimulus integers (these mirror the encode TB inputs).
+	// Stimulus integers.
 	logic [255:0][INW-1:0] f1, f2, f3;
 
-	// Byte arrays to feed decode.
+	// Encoded bytes produced by the encode DUTs (guarantees identical packing).
 	logic [32*D1-1:0][7:0] b1;
 	logic [32*D2-1:0][7:0] b2;
 	logic [32*D3-1:0][7:0] b3;
@@ -19,34 +19,14 @@ module tb_byte_decode;
 	logic [255:0][D2-1:0]        f2_o;
 	logic [255:0][11:0]          f3_o; // OUT_WIDTH is 12 when d=12
 
-	// DUTs.
+	// Encode + Decode DUTs per d value (encode drives byte arrays).
+	byte_encode #(.D(D1), .IN_WIDTH(INW)) enc1 (.f_i(f1), .b_o(b1));
+	byte_encode #(.D(D2), .IN_WIDTH(INW)) enc2 (.f_i(f2), .b_o(b2));
+	byte_encode #(.D(D3), .IN_WIDTH(INW)) enc3 (.f_i(f3), .b_o(b3));
+
 	byte_decode #(.D(D1)) dut1 (.b_i(b1), .f_o(f1_o));
 	byte_decode #(.D(D2)) dut2 (.b_i(b2), .f_o(f2_o));
 	byte_decode #(.D(D3)) dut3 (.b_i(b3), .f_o(f3_o));
-
-	// Helper to create byte arrays from integers (same packing as encode).
-	task automatic pack_bytes(
-		input  int d,
-		input  logic [255:0][INW-1:0] f,
-		output logic [32*d-1:0][7:0] b
-	);
-		int i, j;
-		logic [256*d-1:0] bits;
-		begin
-			bits = '0;
-			for (i = 0; i < 256; i++) begin
-				int unsigned a;
-				a = f[i];
-				for (j = 0; j < d; j++) begin
-					bits[i*d + j] = a[0];
-					a = a >> 1;
-				end
-			end
-			for (i = 0; i < 32*d; i++) begin
-				b[i] = bits[i*8 +: 8];
-			end
-		end
-	endtask
 
 	task automatic init_inputs;
 		int i;
@@ -56,9 +36,6 @@ module tb_byte_decode;
 				f2[i] = i % (1 << D2);
 				f3[i] = i % 3329;
 			end
-			pack_bytes(D1, f1, b1);
-			pack_bytes(D2, f2, b2);
-			pack_bytes(D3, f3, b3);
 		end
 	endtask
 
