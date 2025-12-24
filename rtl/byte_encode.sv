@@ -4,7 +4,7 @@ module byte_encode #(
 	parameter int D = 12,             // 1 <= D <= 12
 	parameter int IN_WIDTH = 16       // must be >= D; wide enough to hold q when D=12
 )(
-	input  logic [255:0][IN_WIDTH-1:0] f_i,
+	input  wire  logic [255:0][IN_WIDTH-1:0] f_i,
 	output logic [32*D-1:0][7:0]       b_o
 );
 
